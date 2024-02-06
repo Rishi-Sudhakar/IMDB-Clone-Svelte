@@ -10,7 +10,7 @@ This is an IMDB clone wannabe in its initial stage, fetches data from omdb api, 
 Install the dependencies...
 
 ```bash
-cd svelte-app
+cd IMDB-Clone-Svelte
 npm install
 ```
 
