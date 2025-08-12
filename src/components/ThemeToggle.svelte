@@ -1,44 +1,37 @@
 <!-- src/components/ThemeToggle.svelte -->
 
 <script>
-    let isDarkMode = false;
-  
-    function toggleDarkMode() {
-      isDarkMode = !isDarkMode;
-      const root = document.documentElement;
-      if (isDarkMode) {
-        root.style.setProperty('--bg-color', '#333');
-        root.style.setProperty('--text-color', '#fff');
-        root.style.setProperty('--card-bg', '#444');
-        root.style.setProperty('--heading-color', '#fff');
-        root.style.setProperty('--rating-bg', '#ffcc00');
-        root.style.setProperty('--rating-text-color', '#333');
-      } else {
-        root.style.removeProperty('--bg-color');
-        root.style.removeProperty('--text-color');
-        root.style.removeProperty('--card-bg');
-        root.style.removeProperty('--heading-color');
-        root.style.removeProperty('--rating-bg');
-        root.style.removeProperty('--rating-text-color');
-      }
-    }
-  </script>
-  
-  <button class="toggle-btn" on:click={toggleDarkMode}>
-    {#if isDarkMode}
-      Light Mode
-    {:else}
-      Dark Mode
-    {/if}
+  import { theme } from '../stores.js';
+  const toggle = () => theme.set($theme === 'dark' ? 'light' : 'dark');
+
+  $: {
+    const root = document.documentElement;
+    const isDark = $theme === 'dark';
+    root.style.setProperty('--bg', isDark ? '#0b0d10' : '#f6f7f9');
+    root.style.setProperty('--surface-1', isDark ? '#111418' : '#ffffff');
+    root.style.setProperty('--surface-2', isDark ? '#171b21' : '#f3f4f7');
+    root.style.setProperty('--surface-3', isDark ? '#1d232b' : '#e9ecf1');
+    root.style.setProperty('--border', isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)');
+    root.style.setProperty('--text', isDark ? '#cfd6df' : '#1b2430');
+    root.style.setProperty('--text-dim', isDark ? '#8e99a8' : '#5b6470');
+    root.style.setProperty('--text-strong', isDark ? '#e6ebf2' : '#0b1118');
+    root.style.setProperty('--accent', isDark ? '#ffd166' : '#1f6feb');
+    root.style.setProperty('--on-accent', isDark ? '#111418' : '#ffffff');
+  }
+</script>
+
+<button class="toggle-btn" on:click={toggle} aria-label="Toggle theme">
+  {$theme === 'dark' ? 'Light' : 'Dark'}
+  mode
   </button>
-  
-  <style>
-    .toggle-btn {
-      background-color: transparent;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-    }
-  </style>
-  
+
+<style>
+  .toggle-btn {
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+</style>

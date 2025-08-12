@@ -1,31 +1,33 @@
 <script>
-    import { createEventDispatcher } from 'svelte';
-  
-    export let movie;
-  
-    const dispatch = createEventDispatcher();
-  
-    function handleClick() {
-      dispatch('showDetails', { movie });
-    }
-  </script>
-  
-  <div class="movie-item" on:click={handleClick}>
-    <div class="poster-container">
-      <img src={`http://img.omdbapi.com/?apikey='350c734b'&i=${movie.imdbID}`} alt={movie.title} class="poster" />
-      <div class="overlay">
-        <button class="btn">View Details</button>
-      </div>
-    </div>
-    <div class="details">
-      <h2>{movie.title}</h2>
-      <p>{movie.description}</p>
-      <div class="rating-container">
-        <div class="rating">{movie.rating}</div>
-        <div class="star">&#9733;</div>
-      </div>
+  import { createEventDispatcher } from 'svelte';
+  export let movie;
+  const dispatch = createEventDispatcher();
+  function handleClick() { dispatch('showDetails', { movie }); }
+  const poster = movie.Poster || movie.poster || '';
+  const title = movie.Title || movie.title;
+  const rating = movie.imdbRating || movie.rating || '-';
+</script>
+
+<div class="movie-item" role="button" tabindex="0" aria-label={`Open details for ${title}`} on:keydown={(e)=> (e.key==='Enter'||e.key===' ') && handleClick()} on:click={handleClick}>
+  <div class="poster-container">
+    {#if poster && poster !== 'N/A'}
+      <img src={poster.startsWith('http') ? poster : `https://img.omdbapi.com/?apikey=8ac01c0f&i=${movie.imdbID}`} alt={title} class="poster" />
+    {:else}
+      <div class="poster placeholder">No image</div>
+    {/if}
+    <div class="overlay">
+      <button class="btn">View Details</button>
     </div>
   </div>
+  <div class="details">
+    <h2>{title}</h2>
+    {#if movie.Year}<p class="year">{movie.Year}</p>{/if}
+    <div class="rating-container">
+      <div class="rating">{rating}</div>
+      <div class="star">&#9733;</div>
+    </div>
+  </div>
+</div>
   
   <style>
     .movie-item {
@@ -56,6 +58,13 @@
       width: 100%;
       height: auto;
       transition: transform 0.3s ease;
+    }
+    .poster.placeholder {
+      display: grid;
+      place-items: center;
+      background: var(--surface-3);
+      color: var(--text-dim);
+      height: 300px;
     }
   
     .poster-container:hover .poster {
@@ -111,6 +120,7 @@
       margin-bottom: 15px;
       color: var(--text-color);
     }
+    .year { color: var(--text-dim); margin-top: -10px; }
   
     .rating-container {
       display: flex;

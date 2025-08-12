@@ -1,20 +1,25 @@
 <script>
-    export let movie;
-  </script>
-  
-  <div class="movie-details">
-    <div class="poster-container">
-      <img src={`http://img.omdbapi.com/?apikey='350c734b'&i=${movie.imdbID}`} alt={movie.title} class="poster" />
-    </div>
-    <div class="details">
-      <h2>{movie.title}</h2>
-      <p>{movie.description}</p>
-      <div class="rating-container">
-        <div class="rating">{movie.rating}</div>
-        <div class="star">&#9733;</div>
-      </div>
+  export let movie;
+  const title = movie?.Title || movie?.title;
+  const plot = movie?.Plot || movie?.description;
+  const rating = movie?.imdbRating || movie?.rating;
+</script>
+
+<div class="movie-details">
+  <div class="poster-container">
+    {#if movie?.Poster && movie.Poster !== 'N/A'}
+      <img src={movie.Poster} alt={title} class="poster" />
+    {/if}
+  </div>
+  <div class="details">
+    <h2>{title}</h2>
+    <p>{plot}</p>
+    <div class="rating-container">
+      <div class="rating">{rating}</div>
+      <div class="star">&#9733;</div>
     </div>
   </div>
+</div>
   
   <style>
     .movie-details {

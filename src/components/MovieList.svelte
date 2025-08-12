@@ -1,29 +1,17 @@
 <!-- src/components/MovieList.svelte -->
 
 <script>
-    // You may import any necessary modules here
-  
-    // Declare the 'movies' prop that will be passed to the component
-    export let movies;
-  </script>
-  
-  <!-- The template for displaying the list of movies -->
-  <div>
-    {#each movies as movie (movie.id)}
-      <div class="movie-item">
-        <h2>{movie.title}</h2>
-        <p>{movie.description}</p>
-        <p>Rating: {movie.rating}</p>
-      </div>
-    {/each}
-  </div>
-  
-  <style>
-    /* You can add styles for the movie list items here */
-    .movie-item {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-  </style>
-  
+  import MovieItem from './MovieItem.svelte';
+  export let movies = [];
+  export let onSelect;
+</script>
+
+<div class="list">
+  {#each movies as movie (movie.imdbID || movie.id)}
+    <MovieItem {movie} on:showDetails={(e) => onSelect ? onSelect(e) : null} />
+  {/each}
+</div>
+
+<style>
+  .list { display: grid; gap: 16px; }
+</style>
