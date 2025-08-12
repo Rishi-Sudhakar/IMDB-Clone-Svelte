@@ -9,6 +9,7 @@
   import Section from './components/Section.svelte';
   import Carousel from './components/Carousel.svelte';
   import SkeletonCard from './components/SkeletonCard.svelte';
+  import MoviesPage from './pages/MoviesPage.svelte';
   import { lastQuery, page, filters } from './stores.js';
   import { onMount } from 'svelte';
 
@@ -71,14 +72,12 @@
 
   function handlePageChange(event) {
     const { page: newPage } = event.detail;
-    // Handle page navigation here
-    console.log('Page changed to:', newPage);
+    page.set(newPage);
   }
 
   function handleFilterChange(event) {
     const newFilters = event.detail;
-    // Handle filter changes here
-    console.log('Filters changed:', newFilters);
+    filters.update(current => ({ ...current, ...newFilters }));
   }
 
   function handleSearchClear() {
@@ -96,73 +95,120 @@
   <Navigation on:pageChange={handlePageChange} on:filterChange={handleFilterChange} />
 
   <main class="main-content">
-    <div class="hero">
-      <div class="hero-inner">
-        <h1>Find your next favorite movie</h1>
-        <p class="tag">Search the OMDb database. Discover new, trending and top rated picks.</p>
-        <div class="search-wrap">
-          <SearchBar on:search={(e) => searchMovies(e.detail.query)} on:clear={handleSearchClear} />
+    {#if $page === 'home'}
+      <!-- Homepage Content -->
+      <div class="hero">
+        <div class="hero-inner">
+          <h1>Find your next favorite movie</h1>
+          <p class="tag">Search the OMDb database. Discover new, trending and top rated picks.</p>
+          <div class="search-wrap">
+            <SearchBar on:search={(e) => searchMovies(e.detail.query)} on:clear={handleSearchClear} />
+          </div>
         </div>
       </div>
-    </div>
 
-    {#if loading}
-      <div class="state">Searching…</div>
-    {:else if error}
-      <div class="state error">{error}</div>
-    {:else if movies.length}
-      <Section title="Search results">
-        <MovieGrid {movies} onSelect={handleShowDetails} />
+      {#if loading}
+        <div class="state">Searching…</div>
+      {:else if error}
+        <div class="state error">{error}</div>
+      {:else if movies.length}
+        <Section title="Search results">
+          <MovieGrid {movies} onSelect={handleShowDetails} />
+        </Section>
+      {/if}
+
+      <Section title="New releases" subtitle="Fresh in theaters and digital">
+        {#if loadingHome}
+          <div class="skeleton-grid">
+            {#each Array(8) as _}
+              <SkeletonCard />
+            {/each}
+          </div>
+        {:else}
+          <Carousel items={newReleases} itemWidth={180} showArrows={true}>
+            {#each newReleases as movie (movie.imdbID)}
+              <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
+            {/each}
+          </Carousel>
+        {/if}
       </Section>
+
+      <Section title="Trending now" subtitle="What everyone's watching">
+        {#if loadingHome}
+          <div class="skeleton-grid">
+            {#each Array(8) as _}
+              <SkeletonCard />
+            {/each}
+          </div>
+        {:else}
+          <Carousel items={trending} itemWidth={180} showArrows={true}>
+            {#each trending as movie (movie.imdbID)}
+              <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
+            {/each}
+          </Carousel>
+        {/if}
+      </Section>
+
+      <Section title="Top rated" subtitle="Critically acclaimed favorites">
+        {#if loadingHome}
+          <div class="skeleton-grid">
+            {#each Array(8) as _}
+              <SkeletonCard />
+            {/each}
+          </div>
+        {:else}
+          <Carousel items={topRated} itemWidth={180} showArrows={true}>
+            {#each topRated as movie (movie.imdbID)}
+              <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
+            {/each}
+          </Carousel>
+        {/if}
+      </Section>
+
+    {:else if $page === 'movies'}
+      <!-- Movies Page -->
+      <MoviesPage onSelect={handleShowDetails} />
+
+    {:else if $page === 'tv'}
+      <!-- TV Shows Page -->
+      <div class="page-placeholder">
+        <h1>TV Shows</h1>
+        <p>Coming soon! TV shows functionality will be implemented here.</p>
+      </div>
+
+    {:else if $page === 'celebs'}
+      <!-- Celebrities Page -->
+      <div class="page-placeholder">
+        <h1>Celebrities</h1>
+        <p>Coming soon! Celebrity information will be implemented here.</p>
+      </div>
+
+    {:else if $page === 'awards'}
+      <!-- Awards Page -->
+      <div class="page-placeholder">
+        <h1>Awards</h1>
+        <p>Coming soon! Awards and nominations will be implemented here.</p>
+      </div>
+
+    {:else if $page === 'news'}
+      <!-- News Page -->
+      <div class="page-placeholder">
+        <h1>Movie News</h1>
+        <p>Coming soon! Latest movie news and updates will be implemented here.</p>
+      </div>
+
+    {:else}
+      <!-- Default Homepage -->
+      <div class="hero">
+        <div class="hero-inner">
+          <h1>Welcome to IMDb Clone</h1>
+          <p class="tag">Your ultimate destination for movie information and discovery</p>
+          <div class="search-wrap">
+            <SearchBar on:search={(e) => searchMovies(e.detail.query)} on:clear={handleSearchClear} />
+          </div>
+        </div>
+      </div>
     {/if}
-
-    <Section title="New releases" subtitle="Fresh in theaters and digital">
-      {#if loadingHome}
-        <div class="skeleton-grid">
-          {#each Array(8) as _}
-            <SkeletonCard />
-          {/each}
-        </div>
-      {:else}
-        <Carousel items={newReleases} itemWidth={180}>
-          {#each newReleases as movie (movie.imdbID)}
-            <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
-          {/each}
-        </Carousel>
-      {/if}
-    </Section>
-
-    <Section title="Trending now" subtitle="What everyone's watching">
-      {#if loadingHome}
-        <div class="skeleton-grid">
-          {#each Array(8) as _}
-            <SkeletonCard />
-          {/each}
-        </div>
-      {:else}
-        <Carousel items={trending} itemWidth={180}>
-          {#each trending as movie (movie.imdbID)}
-            <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
-          {/each}
-        </Carousel>
-      {/if}
-    </Section>
-
-    <Section title="Top rated" subtitle="Critically acclaimed favorites">
-      {#if loadingHome}
-        <div class="skeleton-grid">
-          {#each Array(8) as _}
-            <SkeletonCard />
-          {/each}
-        </div>
-      {:else}
-        <Carousel items={topRated} itemWidth={180}>
-          {#each topRated as movie (movie.imdbID)}
-            <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
-          {/each}
-        </Carousel>
-      {/if}
-    </Section>
   </main>
 </div>
 
@@ -170,8 +216,8 @@
 
 <style>
   :global(body) {
-    background: var(--bg);
-    color: var(--text);
+    background: var(--bg-primary);
+    color: var(--text-primary);
     margin: 0;
     padding: 0;
   }
@@ -192,8 +238,7 @@
   }
   
   .hero {
-    background: radial-gradient(1000px 400px at 10% -10%, rgba(31,111,235,0.15), transparent 50%),
-                radial-gradient(1000px 400px at 90% -10%, rgba(255,209,102,0.15), transparent 50%);
+    background: var(--gradient-hero);
     margin: 0 -16px 32px -16px;
     padding: 0 16px;
   }
@@ -206,11 +251,11 @@
   .hero h1 { 
     margin: 0 0 8px; 
     font-size: clamp(28px, 5vw, 42px); 
-    color: var(--text-strong); 
+    color: var(--text-primary); 
   }
   
   .tag { 
-    color: var(--text-dim); 
+    color: var(--text-secondary); 
     margin: 0 0 16px; 
   }
   
@@ -221,17 +266,34 @@
   
   .state { 
     text-align: center; 
-    color: var(--text-dim); 
+    color: var(--text-secondary); 
     padding: 24px; 
   }
   
   .state.error { 
-    color: #d64545; 
+    color: var(--accent-error); 
   }
   
   .skeleton-grid { 
     display: grid; 
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
     gap: 16px; 
+  }
+  
+  .page-placeholder {
+    text-align: center;
+    padding: 64px 32px;
+    color: var(--text-secondary);
+  }
+  
+  .page-placeholder h1 {
+    margin: 0 0 16px 0;
+    color: var(--text-primary);
+    font-size: 2.5rem;
+  }
+  
+  .page-placeholder p {
+    font-size: 1.125rem;
+    margin: 0;
   }
 </style>

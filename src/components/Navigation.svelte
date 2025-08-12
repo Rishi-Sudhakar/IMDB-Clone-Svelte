@@ -40,7 +40,7 @@
       {#each categories as category}
         <button 
           class="nav-item {($page === category.id ? 'active' : '')}"
-          on:click={() => setPage(pageId)}
+          on:click={() => setPage(category.id)}
         >
           <span class="nav-icon">{category.icon}</span>
           <span class="nav-label">{category.label}</span>
@@ -88,27 +88,28 @@
 
 <style>
   .main-nav {
-    background: var(--surface-1);
-    border-bottom: 1px solid var(--border);
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border-light);
     position: sticky;
-    top: 60px; /* Position below header */
-    z-index: 20;
+    top: 64px;
+    z-index: var(--z-sticky);
     width: 100%;
+    box-shadow: var(--shadow-sm);
   }
   
   .nav-container {
-    max-width: 1100px; /* Match main container width */
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 0 16px; /* Match main container padding */
+    padding: 0 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 60px;
+    height: 56px;
   }
   
   .nav-left {
     display: flex;
-    gap: 8px;
+    gap: 4px;
   }
   
   .nav-item {
@@ -118,21 +119,37 @@
     padding: 8px 16px;
     border: none;
     background: transparent;
-    color: var(--text);
-    border-radius: 8px;
+    color: var(--text-secondary);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-normal);
     font-size: 14px;
+    font-weight: 500;
+    position: relative;
   }
   
   .nav-item:hover {
     background: var(--surface-2);
-    color: var(--text-strong);
+    color: var(--text-primary);
+    transform: translateY(-1px);
   }
   
   .nav-item.active {
-    background: var(--accent);
-    color: var(--on-accent);
+    background: var(--accent-primary);
+    color: white;
+    box-shadow: var(--shadow-md);
+  }
+  
+  .nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 3px;
+    background: var(--accent-primary);
+    border-radius: var(--radius-sm);
   }
   
   .nav-icon {
@@ -156,22 +173,44 @@
   
   .filter-select {
     padding: 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface-2);
-    color: var(--text);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
+    background: var(--surface-1);
+    color: var(--text-primary);
     font-size: 14px;
     cursor: pointer;
+    transition: all var(--transition-fast);
+    min-width: 120px;
   }
   
   .filter-select:focus {
     outline: none;
-    border-color: var(--accent);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .filter-select:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-2);
   }
   
   @media (max-width: 768px) {
-    .nav-label { display: none; }
-    .filters { gap: 8px; }
-    .filter-select { padding: 6px 8px; font-size: 12px; }
+    .nav-label { 
+      display: none; 
+    }
+    
+    .filters { 
+      gap: 8px; 
+    }
+    
+    .filter-select { 
+      padding: 6px 8px; 
+      font-size: 12px; 
+      min-width: 100px;
+    }
+    
+    .nav-item {
+      padding: 8px 12px;
+    }
   }
 </style>

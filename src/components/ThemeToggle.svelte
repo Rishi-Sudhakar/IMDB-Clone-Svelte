@@ -2,36 +2,84 @@
 
 <script>
   import { theme } from '../stores.js';
-  const toggle = () => theme.set($theme === 'dark' ? 'light' : 'dark');
+  
+  function toggleTheme() {
+    theme.set($theme === 'dark' ? 'light' : 'dark');
+  }
 
+  // Apply theme to document
   $: {
-    const root = document.documentElement;
-    const isDark = $theme === 'dark';
-    root.style.setProperty('--bg', isDark ? '#0b0d10' : '#f6f7f9');
-    root.style.setProperty('--surface-1', isDark ? '#111418' : '#ffffff');
-    root.style.setProperty('--surface-2', isDark ? '#171b21' : '#f3f4f7');
-    root.style.setProperty('--surface-3', isDark ? '#1d232b' : '#e9ecf1');
-    root.style.setProperty('--border', isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)');
-    root.style.setProperty('--text', isDark ? '#cfd6df' : '#1b2430');
-    root.style.setProperty('--text-dim', isDark ? '#8e99a8' : '#5b6470');
-    root.style.setProperty('--text-strong', isDark ? '#e6ebf2' : '#0b1118');
-    root.style.setProperty('--accent', isDark ? '#ffd166' : '#1f6feb');
-    root.style.setProperty('--on-accent', isDark ? '#111418' : '#ffffff');
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', $theme);
+    }
   }
 </script>
 
-<button class="toggle-btn" on:click={toggle} aria-label="Toggle theme">
-  {$theme === 'dark' ? 'Light' : 'Dark'}
-  mode
-  </button>
+<button 
+  class="theme-toggle" 
+  on:click={toggleTheme} 
+  aria-label="Toggle theme"
+  title="Toggle theme"
+>
+  <div class="toggle-icon">
+    {#if $theme === 'dark'}
+      <span class="sun">☀️</span>
+    {:else}
+      <span class="moon">🌙</span>
+    {/if}
+  </div>
+  <span class="toggle-text">
+    {$theme === 'dark' ? 'Light' : 'Dark'} Mode
+  </span>
+</button>
 
 <style>
-  .toggle-btn {
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
     background: var(--surface-2);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 8px 12px;
+    color: var(--text-primary);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all var(--transition-normal);
     cursor: pointer;
+  }
+
+  .theme-toggle:hover {
+    background: var(--surface-3);
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .theme-toggle:active {
+    transform: translateY(0);
+  }
+
+  .toggle-icon {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .toggle-text {
+    font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .toggle-text {
+      display: none;
+    }
+    
+    .theme-toggle {
+      padding: 8px;
+      min-width: 40px;
+      justify-content: center;
+    }
   }
 </style>

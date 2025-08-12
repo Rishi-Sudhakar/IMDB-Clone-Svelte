@@ -32,6 +32,7 @@
 
 <form class="search" on:submit|preventDefault={submit}>
   <div class="search-input-wrapper">
+    <div class="search-icon">🔍</div>
     <input
       type="search"
       placeholder="Search movies, TV shows, celebrities..."
@@ -40,12 +41,13 @@
     />
     {#if query}
       <button type="button" class="clear-btn" on:click={clearSearch} aria-label="Clear search">
-        ×
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
       </button>
     {/if}
   </div>
   <button type="submit" class="search-btn">
-    <span class="search-icon">🔍</span>
     <span class="search-text">Search</span>
   </button>
   <slot name="extra" />
@@ -63,73 +65,112 @@
     position: relative;
     display: flex;
     align-items: center;
+    background: var(--surface-1);
+    border: 2px solid var(--border-medium);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-normal);
+    overflow: hidden;
+  }
+
+  .search-input-wrapper:focus-within {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .search-icon {
+    padding: 0 16px;
+    color: var(--text-tertiary);
+    font-size: 18px;
+    pointer-events: none;
   }
 
   input[type='search'] {
-    width: 100%;
-    padding: 14px 16px;
-    border-radius: 12px;
-    border: 2px solid var(--border);
-    background: var(--surface-2);
-    color: var(--text);
+    flex: 1;
+    padding: 16px 16px 16px 0;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
     font-size: 16px;
-    transition: border-color 0.2s ease;
+    outline: none;
   }
 
-  input[type='search']:focus {
-    outline: none;
-    border-color: var(--accent);
+  input[type='search']::placeholder {
+    color: var(--text-tertiary);
   }
 
   .clear-btn {
-    position: absolute;
-    right: 12px;
-    background: none;
+    padding: 8px;
+    margin: 0 8px;
+    background: var(--surface-2);
     border: none;
-    color: var(--text-dim);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px;
+    color: var(--text-tertiary);
     border-radius: 50%;
-    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
   }
 
   .clear-btn:hover {
     background: var(--surface-3);
-    color: var(--text);
+    color: var(--text-primary);
+    transform: scale(1.1);
   }
 
   .search-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 20px;
-    border-radius: 12px;
+    padding: 16px 24px;
+    background: var(--accent-primary);
+    color: white;
     border: none;
-    background: var(--accent);
-    color: var(--on-accent);
-    cursor: pointer;
-    font-weight: 600;
+    border-radius: var(--radius-lg);
     font-size: 16px;
-    transition: all 0.2s ease;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-md);
+    min-width: 120px;
   }
 
   .search-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(31, 111, 235, 0.3);
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
   }
 
-  .search-icon {
-    font-size: 16px;
+  .search-btn:active {
+    transform: translateY(0);
   }
 
   .search-text {
-    display: inline;
+    font-weight: 600;
   }
 
   @media (max-width: 640px) {
-    .search-text { display: none; }
-    .search-btn { padding: 14px 16px; }
+    .search {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    
+    .search-btn {
+      width: 100%;
+      min-width: auto;
+    }
+    
+    .search-input-wrapper {
+      border-radius: var(--radius-md);
+    }
+    
+    input[type='search'] {
+      padding: 14px 14px 14px 0;
+      font-size: 16px;
+    }
+    
+    .search-btn {
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+    }
   }
 </style>
 
