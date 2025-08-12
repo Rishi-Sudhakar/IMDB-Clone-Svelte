@@ -5,27 +5,55 @@
 </script>
 
 <section class="section">
-  <div class="head">
-    <div>
+  <div class="section-header">
+    <div class="section-title">
       <h2>{title}</h2>
       {#if subtitle}<p class="subtitle">{subtitle}</p>{/if}
     </div>
-    <div class="action"><slot name="action">{action}</slot></div>
+    <div class="section-action">
+      <slot name="action">{action}</slot>
+    </div>
   </div>
-  <div class="content">
+  <div class="section-content">
     <slot />
   </div>
-  
 </section>
 
 <style>
-  .section { display: grid; gap: 14px; }
-  .head {
-    display: flex; align-items: end; justify-content: space-between;
+  .section {
+    width: 100%;
+    margin-bottom: 40px;
   }
-  h2 { margin: 0; color: var(--text-strong); font-size: 22px; }
-  .subtitle { margin: 2px 0 0; color: var(--text-dim); }
-  .content { display: grid; gap: 14px; }
+  
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 0;
+  }
+  
+  .section-title h2 {
+    margin: 0;
+    color: var(--text-strong);
+    font-size: 24px;
+    font-weight: 600;
+  }
+  
+  .subtitle {
+    margin: 4px 0 0 0;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  
+  .section-content {
+    width: 100%;
+  }
+  
+  .section-action {
+    display: flex;
+    align-items: center;
+  }
 </style>
 
 

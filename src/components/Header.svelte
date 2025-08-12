@@ -4,25 +4,34 @@
 </script>
 
 <header class="app-header">
-  <div class="brand">
-    <span class="logo">🎬</span>
-    <h1>{title}</h1>
+  <div class="header-container">
+    <div class="brand">
+      <span class="logo">🎬</span>
+      <h1>{title}</h1>
+    </div>
+    <ThemeToggle />
   </div>
-  <ThemeToggle />
 </header>
 
 <style>
   .app-header {
     position: sticky;
     top: 0;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 24px;
+    z-index: 30;
     background: var(--surface-1);
     border-bottom: 1px solid var(--border);
     backdrop-filter: blur(8px);
+    width: 100%;
+  }
+
+  .header-container {
+    max-width: 1100px; /* Match main container width */
+    margin: 0 auto;
+    padding: 0 16px; /* Match main container padding */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
   }
 
   .brand {

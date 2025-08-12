@@ -3,26 +3,52 @@
   export let itemWidth = 180; // px
 </script>
 
-<div class="row" style={`--w:${itemWidth}px`}>
-  <div class="track">
+<div class="carousel-container">
+  <div class="carousel-track" style={`--item-width:${itemWidth}px`}>
     <slot {items} />
   </div>
 </div>
 
 <style>
-  .row { position: relative; }
-  .track {
+  .carousel-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .carousel-track {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: var(--w);
-    gap: 14px;
+    grid-auto-columns: var(--item-width);
+    gap: 16px;
     overflow-x: auto;
-    padding: 6px 0 16px;
+    padding: 8px 0 16px 0;
     scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-3) transparent;
   }
-  .track > * { scroll-snap-align: start; }
-  .track::-webkit-scrollbar { height: 10px; }
-  .track::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 999px; }
+  
+  .carousel-track > * { 
+    scroll-snap-align: start;
+    width: var(--item-width);
+  }
+  
+  .carousel-track::-webkit-scrollbar { 
+    height: 8px; 
+  }
+  
+  .carousel-track::-webkit-scrollbar-track { 
+    background: transparent; 
+  }
+  
+  .carousel-track::-webkit-scrollbar-thumb { 
+    background: var(--surface-3); 
+    border-radius: 4px; 
+  }
+  
+  .carousel-track::-webkit-scrollbar-thumb:hover { 
+    background: var(--surface-2); 
+  }
 </style>
 
 

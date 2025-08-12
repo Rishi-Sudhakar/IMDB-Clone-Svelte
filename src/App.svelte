@@ -2,13 +2,14 @@
 
 <script>
   import Header from './components/Header.svelte';
+  import Navigation from './components/Navigation.svelte';
   import SearchBar from './components/SearchBar.svelte';
   import MovieGrid from './components/MovieGrid.svelte';
   import MovieModal from './components/MovieModal.svelte';
   import Section from './components/Section.svelte';
   import Carousel from './components/Carousel.svelte';
   import SkeletonCard from './components/SkeletonCard.svelte';
-  import { lastQuery } from './stores.js';
+  import { lastQuery, page, filters } from './stores.js';
   import { onMount } from 'svelte';
 
   // search state
@@ -68,71 +69,102 @@
     loadingHome = false;
   }
 
+  function handlePageChange(event) {
+    const { page: newPage } = event.detail;
+    // Handle page navigation here
+    console.log('Page changed to:', newPage);
+  }
+
+  function handleFilterChange(event) {
+    const newFilters = event.detail;
+    // Handle filter changes here
+    console.log('Filters changed:', newFilters);
+  }
+
+  function handleSearchClear() {
+    movies = [];
+    error = '';
+  }
+
   onMount(() => {
     loadHome();
-    if ($lastQuery) searchMovies($lastQuery);
   });
 </script>
 
-<Header title="IMDb Clone" />
+<div class="page-wrapper">
+  <Header title="IMDb Clone" />
+  <Navigation on:pageChange={handlePageChange} on:filterChange={handleFilterChange} />
 
-<main class="container">
-  <div class="hero">
-    <div class="hero-inner">
-      <h1>Find your next favorite movie</h1>
-      <p class="tag">Search the OMDb database. Discover new, trending and top rated picks.</p>
-      <div class="search-wrap">
-        <SearchBar on:search={(e) => searchMovies(e.detail.query)} />
+  <main class="main-content">
+    <div class="hero">
+      <div class="hero-inner">
+        <h1>Find your next favorite movie</h1>
+        <p class="tag">Search the OMDb database. Discover new, trending and top rated picks.</p>
+        <div class="search-wrap">
+          <SearchBar on:search={(e) => searchMovies(e.detail.query)} on:clear={handleSearchClear} />
+        </div>
       </div>
     </div>
-  </div>
 
-  {#if loading}
-    <div class="state">Searching…</div>
-  {:else if error}
-    <div class="state error">{error}</div>
-  {:else if movies.length}
-    <Section title="Search results">
-      <MovieGrid {movies} onSelect={handleShowDetails} />
+    {#if loading}
+      <div class="state">Searching…</div>
+    {:else if error}
+      <div class="state error">{error}</div>
+    {:else if movies.length}
+      <Section title="Search results">
+        <MovieGrid {movies} onSelect={handleShowDetails} />
+      </Section>
+    {/if}
+
+    <Section title="New releases" subtitle="Fresh in theaters and digital">
+      {#if loadingHome}
+        <div class="skeleton-grid">
+          {#each Array(8) as _}
+            <SkeletonCard />
+          {/each}
+        </div>
+      {:else}
+        <Carousel items={newReleases} itemWidth={180}>
+          {#each newReleases as movie (movie.imdbID)}
+            <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
+          {/each}
+        </Carousel>
+      {/if}
     </Section>
-  {/if}
 
-  <Section title="New releases" subtitle="Fresh in theaters and digital">
-    {#if loadingHome}
-      <div class="grid-skel">{#each Array(10) as _}<SkeletonCard />{/each}</div>
-    {:else}
-      <Carousel items={newReleases} let:items>
-        {#each items as m (m.imdbID)}
-          <div style="width: var(--w)"><MovieGrid movies={[m]} onSelect={handleShowDetails} /></div>
-        {/each}
-      </Carousel>
-    {/if}
-  </Section>
+    <Section title="Trending now" subtitle="What everyone's watching">
+      {#if loadingHome}
+        <div class="skeleton-grid">
+          {#each Array(8) as _}
+            <SkeletonCard />
+          {/each}
+        </div>
+      {:else}
+        <Carousel items={trending} itemWidth={180}>
+          {#each trending as movie (movie.imdbID)}
+            <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
+          {/each}
+        </Carousel>
+      {/if}
+    </Section>
 
-  <Section title="Trending now" subtitle="What everyone’s watching">
-    {#if loadingHome}
-      <div class="grid-skel">{#each Array(10) as _}<SkeletonCard />{/each}</div>
-    {:else}
-      <Carousel items={trending} let:items>
-        {#each items as m (m.imdbID)}
-          <div style="width: var(--w)"><MovieGrid movies={[m]} onSelect={handleShowDetails} /></div>
-        {/each}
-      </Carousel>
-    {/else}
-  </Section>
-
-  <Section title="Top rated" subtitle="Critically acclaimed favorites">
-    {#if loadingHome}
-      <div class="grid-skel">{#each Array(10) as _}<SkeletonCard />{/each}</div>
-    {:else}
-      <Carousel items={topRated} let:items>
-        {#each items as m (m.imdbID)}
-          <div style="width: var(--w)"><MovieGrid movies={[m]} onSelect={handleShowDetails} /></div>
-        {/each}
-      </Carousel>
-    {/if}
-  </Section>
-</main>
+    <Section title="Top rated" subtitle="Critically acclaimed favorites">
+      {#if loadingHome}
+        <div class="skeleton-grid">
+          {#each Array(8) as _}
+            <SkeletonCard />
+          {/each}
+        </div>
+      {:else}
+        <Carousel items={topRated} itemWidth={180}>
+          {#each topRated as movie (movie.imdbID)}
+            <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
+          {/each}
+        </Carousel>
+      {/if}
+    </Section>
+  </main>
+</div>
 
 <MovieModal movie={selectedMovie} on:close={() => selectedMovie = null} />
 
@@ -140,14 +172,66 @@
   :global(body) {
     background: var(--bg);
     color: var(--text);
+    margin: 0;
+    padding: 0;
   }
-  .container {
+  
+  .page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .main-content {
+    flex: 1;
     max-width: 1100px;
-    margin: 24px auto;
+    margin: 0 auto;
     padding: 0 16px;
-    display: grid;
-    gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
   }
-  .state { text-align: center; color: var(--text-dim); padding: 24px; }
-  .state.error { color: #d64545; }
+  
+  .hero {
+    background: radial-gradient(1000px 400px at 10% -10%, rgba(31,111,235,0.15), transparent 50%),
+                radial-gradient(1000px 400px at 90% -10%, rgba(255,209,102,0.15), transparent 50%);
+    margin: 0 -16px 32px -16px;
+    padding: 0 16px;
+  }
+  
+  .hero-inner { 
+    padding: 48px 0 24px; 
+    text-align: center; 
+  }
+  
+  .hero h1 { 
+    margin: 0 0 8px; 
+    font-size: clamp(28px, 5vw, 42px); 
+    color: var(--text-strong); 
+  }
+  
+  .tag { 
+    color: var(--text-dim); 
+    margin: 0 0 16px; 
+  }
+  
+  .search-wrap { 
+    max-width: 700px; 
+    margin: 0 auto; 
+  }
+  
+  .state { 
+    text-align: center; 
+    color: var(--text-dim); 
+    padding: 24px; 
+  }
+  
+  .state.error { 
+    color: #d64545; 
+  }
+  
+  .skeleton-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+    gap: 16px; 
+  }
 </style>

@@ -29,5 +29,7 @@ function createPersistedStore(key, initialValue) {
 export const theme = createPersistedStore('theme', 'light');
 export const favorites = createPersistedStore('favorites', []);
 export const lastQuery = createPersistedStore('lastQuery', '');
+export const page = createPersistedStore('page', 'home');
+export const filters = createPersistedStore('filters', { genre: null, year: null, sort: 'rating' });
 
 
