@@ -37,20 +37,24 @@ A modern, responsive movie and TV show discovery application built with Svelte a
 
 ## 🔑 API Configuration
 
-This application uses the TMDB API. You'll need to configure your API credentials:
+This application uses the TMDB API. You'll need to configure your API credentials using environment variables:
 
 ### Required Environment Variables
-```javascript
-// In src/services/tmdb.js
-const TMDB_API_KEY = 'your_api_key_here';
-const TMDB_ACCESS_TOKEN = 'your_access_token_here';
+Create a `.env` file in the root directory with the following variables:
+```bash
+TMDB_API_KEY=your_api_key_here
+TMDB_ACCESS_TOKEN=your_access_token_here
+TMDB_BASE_URL=https://api.themoviedb.org/3
+TMDB_IMAGE_BASE_URL=https://image.tmdb.org/t/p
 ```
 
 ### Getting TMDB API Access
 1. Visit [TMDB](https://www.themoviedb.org/)
 2. Create an account and request API access
 3. Get your API key and access token
-4. Update the configuration in `src/services/tmdb.js`
+4. Copy `.env.example` to `.env` and fill in your credentials
+
+**Note**: The `.env` file is already in `.gitignore` to prevent committing sensitive credentials.
 
 ## 📁 Project Structure
 
@@ -102,7 +106,8 @@ src/
    ```
 
 3. Configure TMDB API:
-   - Update `src/services/tmdb.js` with your API credentials
+   - Copy `.env.example` to `.env`
+   - Fill in your TMDB API credentials in the `.env` file
 
 4. Start the development server:
    ```bash
@@ -163,7 +168,8 @@ The application uses CSS variables for easy theming. Key variables include:
 
 ## 🔒 Security Considerations
 
-- API keys are stored in the frontend (consider environment variables for production)
+- API keys are stored in environment variables (`.env` file)
+- The `.env` file is excluded from version control via `.gitignore`
 - CORS is handled by TMDB API
 - No sensitive user data is stored
 

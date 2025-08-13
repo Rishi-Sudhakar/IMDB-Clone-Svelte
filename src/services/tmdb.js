@@ -1,8 +1,22 @@
 // src/services/tmdb.js
-const TMDB_API_KEY = '3bc81f48f6cf71cb59d2b8caf9b8e657';
-const TMDB_ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzYmM4MWY0OGY2Y2Y3MWNiNTlkMmI4Y2FmOWI4ZTY1NyIsIm5iZiI6MTc1NDk5MjYzMi4wNTUsInN1YiI6IjY4OWIwZmY4N2U0MzUxNDEwZmI3MDdiYSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.pMkiQgzxKi9s73lb6kDgRQcfT3QH6l1l1Qg7kVMlFik';
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
+// TMDB API configuration - all values come from environment variables
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
+const TMDB_ACCESS_TOKEN = process.env.TMDB_ACCESS_TOKEN;
+const TMDB_BASE_URL = process.env.TMDB_BASE_URL;
+const TMDB_IMAGE_BASE_URL = process.env.TMDB_IMAGE_BASE_URL;
+
+// Validate required environment variables
+if (!TMDB_ACCESS_TOKEN) {
+  console.error('TMDB_ACCESS_TOKEN is required. Please check your .env file.');
+}
+
+if (!TMDB_BASE_URL) {
+  console.error('TMDB_BASE_URL is required. Please check your .env file.');
+}
+
+if (!TMDB_IMAGE_BASE_URL) {
+  console.error('TMDB_IMAGE_BASE_URL is required. Please check your .env file.');
+}
 
 // TMDB API configuration
 const tmdbConfig = {

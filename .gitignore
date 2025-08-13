@@ -2,3 +2,8 @@
 /public/build/
 
 .DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.*.local
