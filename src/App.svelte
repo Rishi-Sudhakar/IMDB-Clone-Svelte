@@ -1,73 +1,144 @@
 <!-- src/App.svelte -->
 
 <script>
+  import { onMount } from 'svelte';
   import Header from './components/Header.svelte';
   import Navigation from './components/Navigation.svelte';
   import SearchBar from './components/SearchBar.svelte';
   import MovieGrid from './components/MovieGrid.svelte';
+  import MovieItem from './components/MovieItem.svelte';
   import MovieModal from './components/MovieModal.svelte';
   import Section from './components/Section.svelte';
   import Carousel from './components/Carousel.svelte';
   import SkeletonCard from './components/SkeletonCard.svelte';
   import MoviesPage from './pages/MoviesPage.svelte';
-  import { lastQuery, page, filters } from './stores.js';
-  import { onMount } from 'svelte';
+  import TVShowsPage from './pages/TVShowsPage.svelte';
+  import PeoplePage from './pages/PeoplePage.svelte';
+  import NewsPage from './pages/NewsPage.svelte';
+  import AwardsPage from './pages/AwardsPage.svelte';
+  import { 
+    getTrendingMovies, 
+    getTopRatedMovies, 
+    getNewReleases,
+    searchMovies,
+    getMovieDetails,
+    getMovieGenres,
+    getConfiguration,
+    transformMovieData
+  } from './services/tmdb.js';
+  import { tmdbGenres, tmdbConfiguration, page } from './stores.js';
 
-  // search state
-  let movies = [];
-  let loading = false;
-  let error = '';
-  // homepage sections
   let trending = [];
   let topRated = [];
   let newReleases = [];
-  let loadingHome = true;
   let selectedMovie = null;
+  let loading = {
+    trending: true,
+    topRated: true,
+    newReleases: true
+  };
 
-  const OMDB_API_KEY = '8ac01c0f';
-
-  async function searchMovies(query) {
-    loading = true; error = ''; movies = [];
+  async function loadHomeData() {
     try {
-      const res = await fetch(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=${encodeURIComponent(query)}&type=movie`);
-      const data = await res.json();
-      if (data.Response === 'False') {
-        error = data.Error || 'No results';
-        return;
-      }
-      movies = data.Search || [];
-    } catch (e) {
-      error = 'Failed to fetch movies';
+      // Load genres and configuration first
+      const [genresData, configData] = await Promise.all([
+        getMovieGenres(),
+        getConfiguration()
+      ]);
+      
+      tmdbGenres.set(genresData.genres || []);
+      tmdbConfiguration.set(configData);
+      
+      // Now load movie data after genres are available
+      const [trendingData, topRatedData, newReleasesData] = await Promise.all([
+        getTrendingMovies(),
+        getTopRatedMovies(),
+        getNewReleases()
+      ]);
+      
+      // Transform movies and add genre names
+      const addGenreNames = (movies) => {
+        return movies.map(movie => {
+          const transformed = transformMovieData(movie);
+          if ($tmdbGenres.length > 0 && transformed.genre) {
+            transformed.genreNames = transformed.genre.map(genreId => {
+              const genre = $tmdbGenres.find(g => g.id === genreId);
+              return genre ? genre.name : genreId;
+            });
+          }
+          return transformed;
+        });
+      };
+      
+      trending = addGenreNames(trendingData.results || []);
+      topRated = addGenreNames(topRatedData.results || []);
+      newReleases = addGenreNames(newReleasesData.results || []);
+      
+    } catch (error) {
+      console.error('Error loading home data:', error);
     } finally {
-      loading = false;
+      loading.trending = false;
+      loading.topRated = false;
+      loading.newReleases = false;
     }
   }
 
-  async function handleShowDetails(event) {
-    const { imdbID } = event.detail.movie;
+  async function handleShowDetails(movie) {
+    // Validate that we have a movie with an ID
+    if (!movie || !movie.id) {
+      console.error('Invalid movie data - missing ID:', movie);
+      // Try to use the movie as-is if it has basic info
+      if (movie && (movie.title || movie.Title)) {
+        selectedMovie = movie;
+        return;
+      }
+      return;
+    }
+    
+    // Set the movie immediately to show loading state
+    selectedMovie = movie;
+    
     try {
-      const res = await fetch(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&i=${imdbID}&plot=full`);
-      const data = await res.json();
-      selectedMovie = data;
-    } catch {}
+      const data = await getMovieDetails(movie.id);
+      
+      // Transform the detailed movie data with genre names
+      const transformedMovie = transformMovieData(data);
+      
+      // Add genre names from the genres store
+      if ($tmdbGenres.length > 0 && transformedMovie.genre) {
+        transformedMovie.genreNames = transformedMovie.genre.map(genreId => {
+          const genre = $tmdbGenres.find(g => g.id === genreId);
+          return genre ? genre.name : genreId;
+        });
+      }
+      
+      selectedMovie = transformedMovie;
+    } catch (error) {
+      console.error('Error loading movie details:', error);
+      // Fallback to the original movie data
+      if ($tmdbGenres.length > 0 && movie.genre) {
+        movie.genreNames = movie.genre.map(genreId => {
+          const genre = $tmdbGenres.find(g => g.id === genreId);
+          return genre ? genre.name : genreId;
+        });
+      }
+      selectedMovie = movie;
+    }
   }
 
-  async function loadHome() {
-    loadingHome = true;
+  async function handleSearch(query) {
     try {
-      // OMDb doesn't expose real trending; approximate with year filters and popular titles
-      const year = new Date().getFullYear();
-      const [resNew, resTrend, resTop] = await Promise.all([
-        fetch(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=${year}&type=movie`),
-        fetch(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=Avengers&type=movie`),
-        fetch(`http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&s=The&type=movie`)
-      ]);
-      const [dataNew, dataTrend, dataTop] = await Promise.all([resNew.json(), resTrend.json(), resTop.json()]);
-      newReleases = dataNew.Search || [];
-      trending = dataTrend.Search || [];
-      topRated = dataTop.Search || [];
-    } catch {}
-    loadingHome = false;
+      const results = await searchMovies(query);
+      // Handle search results - could navigate to a search page or show results inline
+      console.log('Search results:', results);
+    } catch (error) {
+      console.error('Search error:', error);
+    }
+  }
+
+  function handleSearchClear() {
+    // Handle search clear
+    console.log('Search cleared');
   }
 
   function handlePageChange(event) {
@@ -75,139 +146,98 @@
     page.set(newPage);
   }
 
-  function handleFilterChange(event) {
-    const newFilters = event.detail;
-    filters.update(current => ({ ...current, ...newFilters }));
-  }
-
-  function handleSearchClear() {
-    movies = [];
-    error = '';
-  }
-
   onMount(() => {
-    loadHome();
+    loadHomeData();
   });
 </script>
 
 <div class="page-wrapper">
-  <Header title="IMDb Clone" />
-  <Navigation on:pageChange={handlePageChange} on:filterChange={handleFilterChange} />
-
+  <Header title="Bingelist" />
+  <Navigation on:pageChange={handlePageChange} />
+  
   <main class="main-content">
-    {#if $page === 'home'}
-      <!-- Homepage Content -->
-      <div class="hero">
-        <div class="hero-inner">
-          <h1>Find your next favorite movie</h1>
-          <p class="tag">Search the OMDb database. Discover new, trending and top rated picks.</p>
-          <div class="search-wrap">
-            <SearchBar on:search={(e) => searchMovies(e.detail.query)} on:clear={handleSearchClear} />
-          </div>
-        </div>
-      </div>
-
-      {#if loading}
-        <div class="state">Searching…</div>
-      {:else if error}
-        <div class="state error">{error}</div>
-      {:else if movies.length}
-        <Section title="Search results">
-          <MovieGrid {movies} onSelect={handleShowDetails} />
-        </Section>
-      {/if}
-
-      <Section title="New releases" subtitle="Fresh in theaters and digital">
-        {#if loadingHome}
-          <div class="skeleton-grid">
-            {#each Array(8) as _}
-              <SkeletonCard />
-            {/each}
-          </div>
-        {:else}
-          <Carousel items={newReleases} itemWidth={180} showArrows={true}>
-            {#each newReleases as movie (movie.imdbID)}
-              <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
-            {/each}
-          </Carousel>
-        {/if}
-      </Section>
-
-      <Section title="Trending now" subtitle="What everyone's watching">
-        {#if loadingHome}
-          <div class="skeleton-grid">
-            {#each Array(8) as _}
-              <SkeletonCard />
-            {/each}
-          </div>
-        {:else}
-          <Carousel items={trending} itemWidth={180} showArrows={true}>
-            {#each trending as movie (movie.imdbID)}
-              <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
-            {/each}
-          </Carousel>
-        {/if}
-      </Section>
-
-      <Section title="Top rated" subtitle="Critically acclaimed favorites">
-        {#if loadingHome}
-          <div class="skeleton-grid">
-            {#each Array(8) as _}
-              <SkeletonCard />
-            {/each}
-          </div>
-        {:else}
-          <Carousel items={topRated} itemWidth={180} showArrows={true}>
-            {#each topRated as movie (movie.imdbID)}
-              <MovieGrid movies={[movie]} onSelect={handleShowDetails} />
-            {/each}
-          </Carousel>
-        {/if}
-      </Section>
-
-    {:else if $page === 'movies'}
+    {#if $page === 'movies'}
       <!-- Movies Page -->
       <MoviesPage onSelect={handleShowDetails} />
 
     {:else if $page === 'tv'}
       <!-- TV Shows Page -->
-      <div class="page-placeholder">
-        <h1>TV Shows</h1>
-        <p>Coming soon! TV shows functionality will be implemented here.</p>
-      </div>
+      <TVShowsPage onSelect={handleShowDetails} />
 
     {:else if $page === 'celebs'}
       <!-- Celebrities Page -->
-      <div class="page-placeholder">
-        <h1>Celebrities</h1>
-        <p>Coming soon! Celebrity information will be implemented here.</p>
-      </div>
+      <PeoplePage onSelect={handleShowDetails} />
 
     {:else if $page === 'awards'}
       <!-- Awards Page -->
-      <div class="page-placeholder">
-        <h1>Awards</h1>
-        <p>Coming soon! Awards and nominations will be implemented here.</p>
-      </div>
+      <AwardsPage />
 
     {:else if $page === 'news'}
       <!-- News Page -->
-      <div class="page-placeholder">
-        <h1>Movie News</h1>
-        <p>Coming soon! Latest movie news and updates will be implemented here.</p>
-      </div>
+      <NewsPage />
 
     {:else}
       <!-- Default Homepage -->
       <div class="hero">
         <div class="hero-inner">
-          <h1>Welcome to IMDb Clone</h1>
-          <p class="tag">Your ultimate destination for movie information and discovery</p>
+          <h1>Welcome to Bingelist</h1>
+          <p class="tag">Entertainment as a list</p>
           <div class="search-wrap">
-            <SearchBar on:search={(e) => searchMovies(e.detail.query)} on:clear={handleSearchClear} />
+            <SearchBar on:search={(e) => handleSearch(e.detail.query)} on:clear={handleSearchClear} />
           </div>
         </div>
       </div>
+
+      <!-- Trending Movies -->
+      <Section title="Trending Now" subtitle="What's hot this week">
+        {#if loading.trending}
+          <div class="skeleton-grid">
+            {#each Array(8) as _}
+              <SkeletonCard />
+            {/each}
+          </div>
+        {:else}
+          <Carousel items={trending} itemWidth={200} showArrows={true}>
+            {#each trending as movie (movie.imdbID)}
+              <MovieItem {movie} on:showDetails={(e) => handleShowDetails(e.detail.movie)} />
+            {/each}
+          </Carousel>
+        {/if}
+      </Section>
+
+      <!-- New Releases -->
+      <Section title="New Releases" subtitle="Fresh content just for you">
+        {#if loading.newReleases}
+          <div class="skeleton-grid">
+            {#each Array(8) as _}
+              <SkeletonCard />
+            {/each}
+          </div>
+        {:else}
+          <Carousel items={newReleases} itemWidth={200} showArrows={true}>
+            {#each newReleases as movie (movie.imdbID)}
+              <MovieItem {movie} on:showDetails={(e) => handleShowDetails(e.detail.movie)} />
+            {/each}
+          </Carousel>
+        {/if}
+      </Section>
+
+      <!-- Top Rated -->
+      <Section title="Top Rated" subtitle="Critically acclaimed favorites">
+        {#if loading.topRated}
+          <div class="skeleton-grid">
+            {#each Array(8) as _}
+              <SkeletonCard />
+            {/each}
+          </div>
+        {:else}
+          <Carousel items={topRated} itemWidth={200} showArrows={true}>
+            {#each topRated as movie (movie.imdbID)}
+              <MovieItem {movie} on:showDetails={(e) => handleShowDetails(e.detail.movie)} />
+            {/each}
+          </Carousel>
+        {/if}
+      </Section>
     {/if}
   </main>
 </div>
@@ -230,70 +260,114 @@
   
   .main-content {
     flex: 1;
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 0 16px;
+    padding: 0 24px;
     width: 100%;
     box-sizing: border-box;
   }
   
   .hero {
-    background: var(--gradient-hero);
-    margin: 0 -16px 32px -16px;
-    padding: 0 16px;
+    background: var(--surface-1);
+    margin: 0 -24px 80px -24px;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border-light);
+    position: relative;
+    overflow: hidden;
   }
   
   .hero-inner { 
-    padding: 48px 0 24px; 
+    padding: 80px 0 64px; 
     text-align: center; 
+    position: relative;
+    z-index: 1;
   }
   
   .hero h1 { 
-    margin: 0 0 8px; 
-    font-size: clamp(28px, 5vw, 42px); 
-    color: var(--text-primary); 
+    margin: 0 0 20px; 
+    font-size: clamp(36px, 6vw, 56px); 
+    color: var(--text-primary);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
   }
   
   .tag { 
     color: var(--text-secondary); 
-    margin: 0 0 16px; 
+    margin: 0 0 40px; 
+    font-size: 20px;
+    font-weight: 500;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
   }
   
-  .search-wrap { 
-    max-width: 700px; 
-    margin: 0 auto; 
+  .search-wrap {
+    max-width: 600px;
+    margin: 0 auto;
   }
   
-  .state { 
-    text-align: center; 
-    color: var(--text-secondary); 
-    padding: 24px; 
+  .skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 24px;
   }
   
-  .state.error { 
-    color: var(--accent-error); 
+  @media (max-width: 768px) {
+    .main-content {
+      padding: 0 20px;
+    }
+    
+    .hero {
+      margin: 0 -20px 60px -20px;
+      padding: 0 20px;
+    }
+    
+    .hero-inner {
+      padding: 60px 0 48px;
+    }
+    
+    .hero h1 {
+      font-size: clamp(28px, 6vw, 42px);
+    }
+    
+    .tag {
+      font-size: 18px;
+      margin-bottom: 32px;
+    }
+    
+    .skeleton-grid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+    }
   }
   
-  .skeleton-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
-    gap: 16px; 
-  }
-  
-  .page-placeholder {
-    text-align: center;
-    padding: 64px 32px;
-    color: var(--text-secondary);
-  }
-  
-  .page-placeholder h1 {
-    margin: 0 0 16px 0;
-    color: var(--text-primary);
-    font-size: 2.5rem;
-  }
-  
-  .page-placeholder p {
-    font-size: 1.125rem;
-    margin: 0;
+  @media (max-width: 480px) {
+    .main-content {
+      padding: 0 16px;
+    }
+    
+    .hero {
+      margin: 0 -16px 48px -16px;
+      padding: 0 16px;
+    }
+    
+    .hero-inner {
+      padding: 48px 0 40px;
+    }
+    
+    .hero h1 {
+      font-size: clamp(24px, 6vw, 32px);
+    }
+    
+    .tag {
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .skeleton-grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
   }
 </style>

@@ -30,6 +30,16 @@ export const theme = createPersistedStore('theme', 'light');
 export const favorites = createPersistedStore('favorites', []);
 export const lastQuery = createPersistedStore('lastQuery', '');
 export const page = createPersistedStore('page', 'home');
-export const filters = createPersistedStore('filters', { genre: null, year: null, sort: 'rating' });
+export const filters = createPersistedStore('filters', { 
+  genre: null, 
+  year: null, 
+  sort: 'popularity.desc',
+  includeAdult: false 
+});
+
+// TMDB-specific stores
+export const tmdbGenres = writable([]);
+export const tmdbConfiguration = writable(null);
+export const tmdbLoading = writable(false);
 
 

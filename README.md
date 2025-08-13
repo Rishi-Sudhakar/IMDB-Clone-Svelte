@@ -1,96 +1,211 @@
-This is an IMDB clone wannabe in its initial stage, fetches data from omdb api, Made using Svelte.
+# IMDb Clone - TMDB API Integration
 
-# svelte app
+A modern, responsive movie and TV show discovery application built with Svelte and powered by The Movie Database (TMDB) API.
 
-*Note that you will need to have [Node.js](https://nodejs.org) installed.*
+## 🚀 Features
 
+### Core Functionality
+- **Movie Discovery**: Browse trending, popular, top-rated, and upcoming movies
+- **TV Show Discovery**: Explore trending, popular, and top-rated TV series
+- **Advanced Search**: Search across movies, TV shows, and people
+- **Comprehensive Filtering**: Filter by genre, year, and sort by various criteria
+- **Responsive Design**: Mobile-first design that works on all devices
 
-## Get started
+### Pages & Sections
+- **Home**: Featured content with trending movies and TV shows
+- **Movies**: Comprehensive movie browsing with advanced filters
+- **TV Shows**: TV series discovery and browsing
+- **Celebrities**: Actor, director, and crew information
+- **Awards**: Information about major film awards and ceremonies
+- **News**: Movie industry news and updates
 
-Install the dependencies...
+### Technical Features
+- **TMDB API Integration**: Full integration with The Movie Database
+- **Real-time Data**: Live data from TMDB's comprehensive database
+- **Image Optimization**: High-quality posters and backdrops
+- **State Management**: Svelte stores for persistent data
+- **Modern UI/UX**: Beautiful, intuitive interface with smooth animations
 
-```bash
-cd IMDB-Clone-Svelte
-npm install
+## 🛠️ Technology Stack
+
+- **Frontend**: Svelte 3
+- **Build Tool**: Rollup
+- **API**: TMDB (The Movie Database)
+- **Styling**: CSS with CSS Variables for theming
+- **State Management**: Svelte Stores
+- **Deployment**: Static hosting ready
+
+## 🔑 API Configuration
+
+This application uses the TMDB API. You'll need to configure your API credentials:
+
+### Required Environment Variables
+```javascript
+// In src/services/tmdb.js
+const TMDB_API_KEY = 'your_api_key_here';
+const TMDB_ACCESS_TOKEN = 'your_access_token_here';
 ```
 
-...then start [Rollup](https://rollupjs.org):
+### Getting TMDB API Access
+1. Visit [TMDB](https://www.themoviedb.org/)
+2. Create an account and request API access
+3. Get your API key and access token
+4. Update the configuration in `src/services/tmdb.js`
 
-```bash
-npm run dev
+## 📁 Project Structure
+
+```
+src/
+├── components/          # Reusable UI components
+│   ├── Carousel.svelte
+│   ├── GenreFilter.svelte
+│   ├── Header.svelte
+│   ├── MovieGrid.svelte
+│   ├── MovieItem.svelte
+│   ├── MovieModal.svelte
+│   ├── Navigation.svelte
+│   ├── SearchBar.svelte
+│   ├── Section.svelte
+│   ├── SkeletonCard.svelte
+│   ├── SortFilter.svelte
+│   ├── ThemeToggle.svelte
+│   └── YearFilter.svelte
+├── pages/              # Page components
+│   ├── AwardsPage.svelte
+│   ├── MoviesPage.svelte
+│   ├── NewsPage.svelte
+│   ├── PeoplePage.svelte
+│   └── TVShowsPage.svelte
+├── services/           # API and external services
+│   └── tmdb.js        # TMDB API integration
+├── stores.js          # Svelte stores for state management
+├── App.svelte         # Main application component
+└── main.js            # Application entry point
 ```
 
-Navigate to [localhost:8080](http://localhost:8080). You should see your app running. Edit a component file in `src`, save it, and reload the page to see your changes.
+## 🚀 Getting Started
 
-By default, the server will only respond to requests from localhost. To allow connections from other computers, edit the `sirv` commands in package.json to include the option `--host 0.0.0.0`.
+### Prerequisites
+- Node.js (v14 or higher)
+- npm or yarn
 
-If you're using [Visual Studio Code](https://code.visualstudio.com/) we recommend installing the official extension [Svelte for VS Code](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode). If you are using other editors you may need to install a plugin in order to get syntax highlighting and intellisense.
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd IMDB-Clone-Svelte
+   ```
 
-## Building and running in production mode
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-To create an optimised version of the app:
+3. Configure TMDB API:
+   - Update `src/services/tmdb.js` with your API credentials
 
-```bash
-npm run build
-```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-You can run the newly built app with `npm run start`. This uses [sirv](https://github.com/lukeed/sirv), which is included in your package.json's `dependencies` so that the app will work when you deploy to platforms like [Heroku](https://heroku.com).
+5. Open your browser and navigate to `http://localhost:5000`
 
+## 📱 Available Scripts
 
-## Single-page app mode
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build for production
+- `npm run start` - Start production server
 
-By default, sirv will only respond to requests that match files in `public`. This is to maximise compatibility with static fileservers, allowing you to deploy your app anywhere.
+## 🌟 TMDB API Features Used
 
-If you're building a single-page app (SPA) with multiple routes, sirv needs to be able to respond to requests for *any* path. You can make it so by editing the `"start"` command in package.json:
+### Movies
+- Trending movies (daily/weekly)
+- Popular movies
+- Top-rated movies
+- Upcoming movies
+- Now playing movies
+- Movie discovery with filters
+- Movie details with credits, videos, and reviews
 
-```js
-"start": "sirv public --single"
-```
+### TV Shows
+- Trending TV shows
+- Popular TV series
+- Top-rated TV shows
+- TV show discovery
+- TV show details
 
-## Using TypeScript
+### People
+- Trending people
+- Popular celebrities
+- People search
+- Person details
 
-This template comes with a script to set up a TypeScript development environment, you can run it immediately after cloning the template with:
+### Search & Discovery
+- Multi-search across movies, TV shows, and people
+- Advanced filtering by genre, year, rating, etc.
+- Sorting by popularity, rating, release date, etc.
 
-```bash
-node scripts/setupTypeScript.js
-```
+## 🎨 Customization
 
-Or remove the script via:
+### Theming
+The application uses CSS variables for easy theming. Key variables include:
+- `--accent-primary`: Primary accent color
+- `--accent-secondary`: Secondary accent color
+- `--surface-1`, `--surface-2`, `--surface-3`: Surface colors
+- `--text-primary`, `--text-secondary`: Text colors
 
-```bash
-rm scripts/setupTypeScript.js
-```
+### Adding New Features
+1. **New API Endpoints**: Add to `src/services/tmdb.js`
+2. **New Pages**: Create in `src/pages/` and add to navigation
+3. **New Components**: Create in `src/components/` for reusability
+4. **New Stores**: Add to `src/stores.js` for state management
 
-If you want to use `baseUrl` or `path` aliases within your `tsconfig`, you need to set up `@rollup/plugin-alias` to tell Rollup to resolve the aliases. For more info, see [this StackOverflow question](https://stackoverflow.com/questions/63427935/setup-tsconfig-path-in-svelte).
+## 🔒 Security Considerations
 
-## Deploying to the web
+- API keys are stored in the frontend (consider environment variables for production)
+- CORS is handled by TMDB API
+- No sensitive user data is stored
 
-### With [Vercel](https://vercel.com)
+## 📈 Performance Features
 
-Install `vercel` if you haven't already:
+- Lazy loading of images
+- Skeleton loading states
+- Efficient pagination
+- Optimized API calls
+- Responsive image sizes
 
-```bash
-npm install -g vercel
-```
+## 🌐 Browser Support
 
-Then, from within your project folder:
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- Mobile browsers
+- Progressive Web App ready
 
-```bash
-cd public
-vercel deploy --name my-project
-```
+## 🤝 Contributing
 
-### With [surge](https://surge.sh/)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-Install `surge` if you haven't already:
+## 📄 License
 
-```bash
-npm install -g surge
-```
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-Then, from within your project folder:
+## 🙏 Acknowledgments
 
-```bash
-npm run build
-surge public my-project.surge.sh
-```
+- [TMDB](https://www.themoviedb.org/) for providing the comprehensive movie and TV show database
+- [Svelte](https://svelte.dev/) for the amazing reactive framework
+- The open-source community for inspiration and tools
+
+## 📞 Support
+
+For questions or issues:
+1. Check the existing issues
+2. Create a new issue with detailed information
+3. Include browser and device information
+
+---
+
+**Note**: This application is for educational and demonstration purposes. Please respect TMDB's terms of service and rate limits when using their API.
